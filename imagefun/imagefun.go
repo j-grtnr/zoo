@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"image"
 	"image/color"
 	"image/png"
@@ -20,35 +21,19 @@ import (
 // pointers
 
 const (
-	// Const values can not be changed.
-	// Don't use snake-case
-	// Don't use UPPER_CASE as we do in C or Python
-	width  = 6
-	height = 6
-
-	fileName = "image.png"
+	myConst = 42
 )
 
-// Image is actually array of arrays
-// 0 1 2 3
-// 0 1 2 3
-// 0 1 2 3
-// 0 1 2 3
+type imgOptions struct {
+	width    int
+	height   int
+	colors   map[int]*color.RGBA
+	fileName string
+}
 
 var (
-	// Here is a map. Generally, dictionary
-	// As we have in Google translate:
-	// f.e.
-	// English-German:
-	// Airplane: Flugzeug
-	// Here we do map number to color:
-	// 0 -> Cyan
-	// 1 -> Yellow
-	// etc
-
 	colors = map[int]*color.RGBA{
 		// RGBa: RED, GREEN, BLUE, ALPHA ch. (transparency)
-		// It is just a set of colors I use in draw func
 		0: {R: 100, G: 200, B: 200, A: 0xff},
 		1: {R: 70, G: 70, B: 21, A: 0xff},
 		2: {R: 207, G: 70, B: 110, A: 0xff},
@@ -64,13 +49,26 @@ func init() {
 }
 
 func main() {
-	// create an empty image with some size
-	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{width, height}})
+
+	var w *int = flag.Int("w", 200, "image width in pixels")
+	var h *int = flag.Int("h", 200, "image height in pixels")
+	var fn *string = flag.String("f", "image.png", "file name")
+	flag.Parse()
+
+	var options imgOptions = imgOptions{
+		width:    *w,
+		height:   *h,
+		colors:   colors,
+		fileName: *fn,
+	}
+
+	// create an empty image
+	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{options.width, options.height}})
 	// draw func that fill the image with some colors
-	draw(img, colors)
+	draw(img, options)
 
 	// create a file
-	f, err := os.Create(fileName)
+	f, err := os.Create(options.fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,15 +79,16 @@ func main() {
 	}
 }
 
-func draw(img *image.RGBA, colors map[int]*color.RGBA) {
+//func draw(img *image.RGBA, colors map[int]*color.RGBA) {
+func draw(img *image.RGBA, options imgOptions) {
 	// line by line go through the every pixel and fill that with some random color
-	for x := 0; x < (width / 2); x++ {
-		for y := 0; y < height; y++ {
+	for x := 0; x < (options.width / 2); x++ {
+		for y := 0; y < options.height; y++ {
 			color := rand.Intn(5)
 			// fill the left side firstly
-			img.Set(x, y, colors[color])
+			img.Set(x, y, options.colors[color])
 			// fill the right side to make the image symmetric
-			img.Set(width-x-1, y, colors[color])
+			img.Set(options.width-x-1, y, options.colors[color])
 		}
 	}
 }
