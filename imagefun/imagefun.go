@@ -34,12 +34,18 @@ type imgOptions struct {
 var (
 	colors = map[int]*color.RGBA{
 		// RGBa: RED, GREEN, BLUE, ALPHA ch. (transparency)
-		0: {R: 100, G: 200, B: 200, A: 0xff},
-		1: {R: 70, G: 70, B: 21, A: 0xff},
-		2: {R: 207, G: 70, B: 110, A: 0xff},
-		3: {R: 78, G: 70, B: 207, A: 0xff},
-		4: {R: 207, G: 205, B: 70, A: 0xff},
-		5: {R: 177, G: 37, B: 180, A: 0xff},
+		0:  {R: 100, G: 200, B: 200, A: 0xff},
+		1:  {R: 70, G: 70, B: 21, A: 0xff},
+		2:  {R: 207, G: 70, B: 110, A: 0xff},
+		3:  {R: 78, G: 70, B: 207, A: 0xff},
+		4:  {R: 207, G: 205, B: 70, A: 0xff},
+		5:  {R: 177, G: 37, B: 180, A: 0xff},
+		6:  {R: 225, G: 39, B: 232, A: 0xff},
+		7:  {R: 255, G: 0, B: 0, A: 0xff},
+		8:  {R: 0, G: 255, B: 0, A: 0xff},
+		9:  {R: 0, G: 0, B: 255, A: 0xff},
+		10: {R: 255, G: 128, B: 0, A: 0xff},
+		11: {R: 255, G: 0, B: 127, A: 0xff},
 	}
 )
 
@@ -84,7 +90,7 @@ func draw(img *image.RGBA, options imgOptions) {
 	// line by line go through the every pixel and fill that with some random color
 	for x := 0; x < (options.width / 2); x++ {
 		for y := 0; y < options.height; y++ {
-			color := rand.Intn(5)
+			color := rand.Intn(len(options.colors))
 			// fill the left side firstly
 			img.Set(x, y, options.colors[color])
 			// fill the right side to make the image symmetric
