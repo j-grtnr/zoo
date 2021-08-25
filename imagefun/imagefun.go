@@ -85,11 +85,8 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		//process input
-		inputArrayWithColorRepresentation := GetArray(lines)
-		inputArray := PutColors(options, inputArrayWithColorRepresentation)
-		inputArrayUniform := modifyUniform(options, inputArray)
-		options.content = scaleContent(options, inputArrayUniform)
+
+		options.content = processInput(lines, options)
 	}
 
 	// draw func that fill the image with some colors
@@ -107,8 +104,17 @@ func main() {
 	}
 }
 
+func processInput(lines []string, options imgOptions) [][]*color.RGBA {
+
+	inputArrayWithColorRepresentation := getArray(lines)
+	inputArray := putColors(options, inputArrayWithColorRepresentation)
+	inputArrayUniform := modifyUniform(options, inputArray)
+
+	return scaleContent(options, inputArrayUniform)
+}
+
 func draw(img *image.RGBA, options imgOptions) {
-	// line by line go through the every pixel and fill that with some random color
+	// line by line go through the every pixel and fill that with some color
 	var asFlag bool = (options.content != nil)
 	var pixelColor *color.RGBA
 
@@ -139,7 +145,7 @@ func read_lines() (error, []string) {
 	for {
 		// reads user input until \n by default
 		scanner.Scan()
-		// Holds the string that was scanned
+		// holds the string that was scanned
 		line := scanner.Text()
 		if len(line) != 0 {
 			lines = append(lines, line)
@@ -151,11 +157,9 @@ func read_lines() (error, []string) {
 	return scanner.Err(), lines
 }
 
-func GetArray(lines []string) [][]int {
+func getArray(lines []string) (array [][]int) {
 	// convert lines to 2D array with int
 
-	var array [][]int
-	var stack []string
 	var colorRepresenter int = -1
 	var colorMap = make(map[string]int)
 
@@ -163,10 +167,10 @@ func GetArray(lines []string) [][]int {
 		elements := strings.Split(lines[x], "")
 		var mask []int
 		for _, element := range elements {
-			if !IsIn(element, stack) {
+			_, exists := colorMap[element]
+			if !exists {
 				colorRepresenter++
 				colorMap[element] = colorRepresenter
-				stack = append(stack, element)
 			}
 			mask = append(mask, colorMap[element])
 		}
@@ -175,27 +179,21 @@ func GetArray(lines []string) [][]int {
 	return array
 }
 
-func PutColors(options imgOptions, colorReprArray [][]int) (colorArray [][]*color.RGBA) {
-	// shuffle order of colors to pick
-	colorPicker := make([]int, len(options.colors))
-	for i := range colorPicker {
-		colorPicker[i] = i
-	}
-	rand.Shuffle(len(colorPicker), func(i, j int) {
-		colorPicker[i], colorPicker[j] = colorPicker[j], colorPicker[i]
-	})
+func putColors(options imgOptions, colorReprArray [][]int) (colorArray [][]*color.RGBA) {
+
+	var colorPicker []int = getShuffleRange(len(options.colors))
 
 	for _, values := range colorReprArray {
 		var row []*color.RGBA
 		for _, value := range values {
-			row = append(row, options.colors[colorPicker[value]%len(options.colors)])
+			row = append(row, options.colors[colorPicker[value%len(options.colors)]])
 		}
 		colorArray = append(colorArray, row)
 	}
 	return colorArray
 }
 
-func modifyUniform(options imgOptions, inputArray [][]*color.RGBA) (scaledArray [][]*color.RGBA) {
+func modifyUniform(options imgOptions, inputArray [][]*color.RGBA) (arrayUniform [][]*color.RGBA) {
 	//correct dimensions to be symmetric
 
 	var maxWidth int
@@ -206,7 +204,6 @@ func modifyUniform(options imgOptions, inputArray [][]*color.RGBA) (scaledArray 
 	}
 
 	//fill array to uniform dimensions
-	var arrayUniform [][]*color.RGBA
 	for ii, row := range inputArray {
 		var rowUniform []*color.RGBA
 		for jj := 0; jj < maxWidth; jj++ {
@@ -246,12 +243,13 @@ func scaleContent(options imgOptions, inputArray [][]*color.RGBA) (scaledArray [
 	return scaledArray
 }
 
-func IsIn(element string, stack []string) (val bool) {
-	for _, ee := range stack {
-		if ee == element {
-			val = true
-			break
-		}
+func getShuffleRange(number int) []int {
+	shuffled := make([]int, number)
+	for i := range shuffled {
+		shuffled[i] = i
 	}
-	return val
+	rand.Shuffle(number, func(i, j int) {
+		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	})
+	return shuffled
 }

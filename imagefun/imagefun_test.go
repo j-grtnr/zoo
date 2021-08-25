@@ -4,25 +4,19 @@ import (
 	"testing"
 )
 
-// func TestConvert(t *testing.T) {
-// 	t.Log("Hello World")
-// 	t.Fail()
-// }
-
 var (
 	options = imgOptions{
 		width:    200,
 		height:   150,
 		colors:   colors,
 		fileName: "test_image.png",
-		//content  [][]*color.RGBA
 	}
 	inputLines     = []string{"1111", "%%%", "//"}
 	colorReprArray = [][]int{{0, 0, 0, 0}, {1, 1, 1}, {2, 2}}
 )
 
 func TestGetArray(t *testing.T) {
-	arr := GetArray(inputLines)
+	arr := getArray(inputLines)
 
 	for ii := range colorReprArray {
 		for jj := range colorReprArray[ii] {
@@ -36,7 +30,7 @@ func TestGetArray(t *testing.T) {
 }
 
 func TestPutColors(t *testing.T) {
-	arr := PutColors(options, colorReprArray)
+	arr := putColors(options, colorReprArray)
 
 	//check whether each value in array is represented in options.colors
 	for ii, line := range arr {
@@ -57,7 +51,7 @@ func TestPutColors(t *testing.T) {
 }
 
 func TestModifyUniform(t *testing.T) {
-	arr := PutColors(options, colorReprArray)
+	arr := putColors(options, colorReprArray)
 	arrUniform := modifyUniform(options, arr)
 	width := len(arrUniform[0])
 	for _, line := range arrUniform {
@@ -69,7 +63,7 @@ func TestModifyUniform(t *testing.T) {
 }
 
 func TestScaleContent(t *testing.T) {
-	arr := PutColors(options, colorReprArray)
+	arr := putColors(options, colorReprArray)
 	arrUniform := modifyUniform(options, arr)
 	arrScaled := scaleContent(options, arrUniform)
 
@@ -84,19 +78,4 @@ func TestScaleContent(t *testing.T) {
 		}
 	}
 
-}
-
-func TestIsIn(t *testing.T) {
-	e1 := "h"
-	s1 := []string{"a", "b", "h", "i"}
-	e2 := "?"
-	s2 := []string{"a", "/", "h", "i"}
-
-	if IsIn(e1, s1) {
-	} else {
-		t.Fail()
-	}
-	if IsIn(e2, s2) {
-		t.Fail()
-	}
 }
