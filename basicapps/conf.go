@@ -11,9 +11,8 @@ type config struct {
 	filePath string
 	// KeyString is a substring we are looking for
 	keyString string
-	// IgnoreCase define the behavior about char's register: if ignoreCase is "true", we should ignore
-	// the register of the input
-	ingoreCase string
+	// IgnoreCase define the behavior about char's register: if ignoreCase is "true", we should ignore the register of the input
+	ignoreCase string
 }
 
 // mustGetConfig do read config env variables and validation of the app input
@@ -34,7 +33,7 @@ func loadConfig() config {
 	return config{
 		filePath:   os.Getenv("FILE_PATH"),
 		keyString:  os.Getenv("KEY_STRING"),
-		ingoreCase: os.Getenv("IGNORE_CASE"),
+		ignoreCase: os.Getenv("IGNORE_CASE"),
 	}
 }
 

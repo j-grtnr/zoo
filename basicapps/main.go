@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 )
 
 // The agenda:
@@ -30,16 +32,29 @@ import (
 
 func main() {
 	config := mustGetConfig()
+	fmt.Println(config)
 
 	content, err := readFile(config.filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	detected, err := checkFull(content, config.keyString, containsCheck, colorFormat)
+	ignoreCase, err := strconv.ParseBool(config.ignoreCase)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	print(detected)
+	if ignoreCase {
+		detected, err := checkFull(content, config.keyString, containsCheckIgnoreCase, colorFormat) //, ignoreCase)
+		if err != nil {
+			log.Fatal(err)
+		}
+		print(detected)
+	} else {
+		detected, err := checkFull(content, config.keyString, containsCheck, colorFormat) //, ignoreCase)
+		if err != nil {
+			log.Fatal(err)
+		}
+		print(detected)
+	}
 }

@@ -33,3 +33,13 @@ func containsCheck(keyWord, line string) (string, error) {
 	// usually "else" keyword of what we don't really need
 	return "", nil
 }
+
+func containsCheckIgnoreCase(keyWord, line string) (string, error) {
+	// TODO: add test
+	if strings.Contains(strings.ToLower(line), strings.ToLower(keyWord)) {
+		return line, nil
+	}
+
+	// usually "else" keyword of what we don't really need
+	return "", nil
+}
