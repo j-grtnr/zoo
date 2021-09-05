@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
 // The agenda:
@@ -37,7 +38,6 @@ func main() {
 	file, err := os.Open(config.filePath)
 	if err != nil {
 		log.Fatal(err)
-		//return nil, fmt.Errorf("error while open file: %w", err)
 	}
 	defer file.Close()
 
@@ -50,25 +50,17 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if config.ignoreCase == "true" {
-			detected, err := checkLine(line, config.keyString, containsCheckIgnoreCase, colorFormat, true)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err != nil {
-				log.Fatal(err)
-			}
-			if detected != "" {
-				fmt.Print(detected)
-			}
-		} else {
-			detected, err := checkLine(line, config.keyString, containsCheck, colorFormat, false)
-			if err != nil {
-				log.Fatal(err)
-			}
-			if detected != "" {
-				fmt.Print(detected)
-			}
+		ignoreCase, err := strconv.ParseBool(config.ignoreCase)
+		if err != nil {
+			log.Fatalf("%v\nFailed to interprete command line argument.", err)
+		}
+
+		detected, err := checkLine(line, config.keyString, colorFormat, ignoreCase)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if detected != "" {
+			fmt.Print(detected)
 		}
 	}
 }

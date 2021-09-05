@@ -13,7 +13,6 @@ const (
 
 type (
 	formatter func(keyWord, line string, ignoreCase bool) string
-	//formatter func(key, line string) string
 )
 
 func colorFormat(keyWord, line string, ignoreCase bool) string {
