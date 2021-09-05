@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"log"
+	"regexp"
 )
 
 const (
@@ -11,14 +12,25 @@ const (
 )
 
 type (
-	formatter func(keyWord, line string) string
+	formatter func(keyWord, line string, ignoreCase bool) string
+	//formatter func(key, line string) string
 )
 
-func colorFormat(keyWord, line string) string {
+func colorFormat(keyWord, line string, ignoreCase bool) string {
 	if line == "" {
 		return ""
 	}
+	var keyWord_re string
+	if ignoreCase {
+		keyWord_re = "(?i)" + keyWord
+	} else {
+		keyWord_re = keyWord
+	}
+	key, err := regexp.Compile(keyWord_re)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	replaced := strings.ReplaceAll(line, keyWord, fmt.Sprintf("%s%s%s", red, keyWord, reset))
+	replaced := key.ReplaceAllString(line, fmt.Sprintf("%s%s%s", red, key.FindString(line), reset)) //TODO: fix bug (line might contain more than one hits)
 	return fmt.Sprintf("%s\n", replaced)
 }

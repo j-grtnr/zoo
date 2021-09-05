@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"regexp"
 	"strings"
 )
 
@@ -9,19 +11,24 @@ type (
 	checkFunc func(keyWord, line string) (string, error)
 )
 
-func checkFull(content []string, keyWord string, checkFunc checkFunc, formatter formatter) ([]string, error) {
-	// TODO: add test
-	var detected []string
-	for _, line := range content {
-		res, err := checkFunc(keyWord, line)
-		if err != nil {
-			return nil, fmt.Errorf("error while check the line:%w: %s", err, line)
-		}
-
-		detected = append(detected, formatter(keyWord, res))
+func checkLine(line string, keyWord string, checkFunc checkFunc, formatter formatter, ignoreCase bool) (string, error) {
+	var keyWord_re string
+	if ignoreCase {
+		keyWord_re = `(?i)` + keyWord
+	} else {
+		keyWord_re = keyWord
+	}
+	key, err := regexp.Compile(keyWord_re)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return detected, nil
+	res, err := checkFunc(key, line)
+	if err != nil {
+		return "", fmt.Errorf("error while check line: %w: %s", err, line)
+	}
+	return formatter(keyWord, res, ignoreCase), nil //TODO: fix bug - formatter fails if IGNORE_CASE="true"
+	//return formatter(key, res), nil
 }
 
 func containsCheck(keyWord, line string) (string, error) {
@@ -39,7 +46,17 @@ func containsCheckIgnoreCase(keyWord, line string) (string, error) {
 	if strings.Contains(strings.ToLower(line), strings.ToLower(keyWord)) {
 		return line, nil
 	}
+	return "", nil
+}
 
-	// usually "else" keyword of what we don't really need
+func containsCheckRegexp(key *regexp.Regexp, line string) (string, error) {
+	// TODO: add test
+	for _, word := range strings.Fields(strings.TrimSpace(line)) {
+		found := key.MatchString(word) //bool
+		if found {
+			return line, nil
+			break
+		}
+	}
 	return "", nil
 }

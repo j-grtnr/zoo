@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
-	"strconv"
+	"os"
 )
 
 // The agenda:
@@ -32,29 +33,42 @@ import (
 
 func main() {
 	config := mustGetConfig()
-	fmt.Println(config)
 
-	content, err := readFile(config.filePath)
+	file, err := os.Open(config.filePath)
 	if err != nil {
 		log.Fatal(err)
+		//return nil, fmt.Errorf("error while open file: %w", err)
 	}
+	defer file.Close()
 
-	ignoreCase, err := strconv.ParseBool(config.ignoreCase)
-	if err != nil {
-		log.Fatal(err)
+	scanner := bufio.NewScanner(file)
+	if scanner.Err() != nil {
+		log.Fatal(scanner.Err().Error())
 	}
+	scanner.Split(bufio.ScanLines)
 
-	if ignoreCase {
-		detected, err := checkFull(content, config.keyString, containsCheckIgnoreCase, colorFormat) //, ignoreCase)
-		if err != nil {
-			log.Fatal(err)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if config.ignoreCase == "true" {
+			detected, err := checkLine(line, config.keyString, containsCheckIgnoreCase, colorFormat, true)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+			if detected != "" {
+				fmt.Print(detected)
+			}
+		} else {
+			detected, err := checkLine(line, config.keyString, containsCheck, colorFormat, false)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if detected != "" {
+				fmt.Print(detected)
+			}
 		}
-		print(detected)
-	} else {
-		detected, err := checkFull(content, config.keyString, containsCheck, colorFormat) //, ignoreCase)
-		if err != nil {
-			log.Fatal(err)
-		}
-		print(detected)
 	}
 }
