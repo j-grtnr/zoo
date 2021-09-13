@@ -74,9 +74,10 @@ func main() {
 		fileName: *fn,
 	}
 
-	// create an empty image
+	// Create an empty image.
 	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{options.width, options.height}})
 
+	// Create image content from user input if that flag is used.
 	if *isFlag {
 		fmt.Print("Enter flag representation: ")
 
@@ -89,22 +90,22 @@ func main() {
 		options.content = processInput(lines, options)
 	}
 
-	// draw func that fill the image with some colors
+	// Fill the image with colors.
 	draw(img, options)
 
-	// create a file
+	// Create a file.
 	f, err := os.Create(options.fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// write an image to a file
+	// Write an image to a file.
 	if err := png.Encode(f, img); err != nil {
 		log.Fatal(err)
 	}
 }
 
-// Prepare the user input to fit into the image
+// Prepare the user input to fit into the image and translate to colors.
 func processInput(lines []string, options imgOptions) [][]*color.RGBA {
 	inputArrayWithColorRepresentation := getArrayFromLines(lines)
 	inputArray := putColors(options, inputArrayWithColorRepresentation)
@@ -112,7 +113,7 @@ func processInput(lines []string, options imgOptions) [][]*color.RGBA {
 	return scaleContent(options, inputArrayUniform)
 }
 
-// Draw an image by setting colors for each pixel
+// Draw an image by setting colors for each pixel.
 func draw(img *image.RGBA, options imgOptions) {
 	var asFlag bool = (options.content != nil)
 	if asFlag {
@@ -125,7 +126,7 @@ func draw(img *image.RGBA, options imgOptions) {
 
 // Draws an image by choosing random colours for the left side from the given colours
 // that are provided in imgOptions.
-// Left side pixel colours are mirroed to the right side.
+// Left side pixel colours are mirrored to the right side.
 func drawRandomColorSymmetricLayout(img *image.RGBA, options imgOptions) {
 	var pixelColor *color.RGBA
 	for x := 0; x < (options.width / 2); x++ {
@@ -140,7 +141,7 @@ func drawRandomColorSymmetricLayout(img *image.RGBA, options imgOptions) {
 	}
 }
 
-// Draws an image from imgOptions content
+// Draws an image from imgOptions content.
 func drawContent(img *image.RGBA, options imgOptions) {
 	for x := 0; x < (options.width); x++ {
 		for y := 0; y < options.height; y++ {
@@ -149,6 +150,8 @@ func drawContent(img *image.RGBA, options imgOptions) {
 	}
 }
 
+// Reads user input line by line as strings.
+// Finishes after an empty line was given.
 func read_lines() ([]string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	var lines []string
@@ -167,7 +170,7 @@ func read_lines() ([]string, error) {
 	return lines, scanner.Err()
 }
 
-// Convert lines to 2D array with Integers representing input characters
+// Convert lines to 2D array with Integers representing input characters.
 func getArrayFromLines(lines []string) (array [][]int) {
 	var colorRepresenter int = -1
 	var colorMap = make(map[string]int)
@@ -188,6 +191,9 @@ func getArrayFromLines(lines []string) (array [][]int) {
 	return array
 }
 
+// Translates 2D Array of Integers into 2D Array of color RGBA values.
+// Each distinct Integer gets a distinct color value until the given colours are used off.
+// Colors are used multiple times if the given colours are not enough.
 func putColors(options imgOptions, colorReprArray [][]int) (colorArray [][]*color.RGBA) {
 
 	var colorPicker []int = getShuffleRange(len(options.colors))
@@ -202,9 +208,9 @@ func putColors(options imgOptions, colorReprArray [][]int) (colorArray [][]*colo
 	return colorArray
 }
 
+// Correct dimensions of 2D Array to be uniform. Each row should have the same length,
+// so do the columns.
 func modifyUniform(options imgOptions, inputArray [][]*color.RGBA) (arrayUniform [][]*color.RGBA) {
-	//correct dimensions to be symmetric
-
 	var maxWidth int
 	for _, row := range inputArray {
 		if maxWidth < len(row) {
@@ -227,6 +233,7 @@ func modifyUniform(options imgOptions, inputArray [][]*color.RGBA) (arrayUniform
 	return arrayUniform
 }
 
+// Scale the size and content of 2D Array according to width and height parameters given in imgOptions.
 func scaleContent(options imgOptions, inputArray [][]*color.RGBA) (scaledArray [][]*color.RGBA) {
 
 	var inputWidth int = len(inputArray[0])
@@ -252,6 +259,7 @@ func scaleContent(options imgOptions, inputArray [][]*color.RGBA) (scaledArray [
 	return scaledArray
 }
 
+// Get a slice of Integers with shuffled values from 0 to number argument minus one.
 func getShuffleRange(number int) []int {
 	shuffled := make([]int, number)
 	for i := range shuffled {
