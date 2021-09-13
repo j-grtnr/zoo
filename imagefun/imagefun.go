@@ -45,8 +45,6 @@ var (
 		10: {R: 255, G: 128, B: 0, A: 0xff},
 		11: {R: 255, G: 0, B: 127, A: 0xff},
 	}
-	err   error
-	lines []string
 )
 
 type imgOptions struct {
@@ -80,7 +78,9 @@ func main() {
 	img := image.NewRGBA(image.Rectangle{image.Point{0, 0}, image.Point{options.width, options.height}})
 
 	if *isFlag {
-		err, lines = read_lines()
+		fmt.Print("Enter flag representation: ")
+
+		lines, err := read_lines()
 
 		if err != nil {
 			log.Fatal(err)
@@ -104,43 +104,53 @@ func main() {
 	}
 }
 
+// Prepare the user input to fit into the image
 func processInput(lines []string, options imgOptions) [][]*color.RGBA {
-
-	inputArrayWithColorRepresentation := getArray(lines)
+	inputArrayWithColorRepresentation := getArrayFromLines(lines)
 	inputArray := putColors(options, inputArrayWithColorRepresentation)
 	inputArrayUniform := modifyUniform(options, inputArray)
-
 	return scaleContent(options, inputArrayUniform)
 }
 
+// Draw an image by setting colors for each pixel
 func draw(img *image.RGBA, options imgOptions) {
-	// line by line go through the every pixel and fill that with some color
 	var asFlag bool = (options.content != nil)
-	var pixelColor *color.RGBA
+	if asFlag {
+		drawContent(img, options)
+	}
+	if !asFlag {
+		drawRandomColorSymmetricLayout(img, options)
+	}
+}
 
+// Draws an image by choosing random colours for the left side from the given colours
+// that are provided in imgOptions.
+// Left side pixel colours are mirroed to the right side.
+func drawRandomColorSymmetricLayout(img *image.RGBA, options imgOptions) {
+	var pixelColor *color.RGBA
 	for x := 0; x < (options.width / 2); x++ {
 		for y := 0; y < options.height; y++ {
-			if asFlag {
-				pixelColor = options.content[y][x]
-				img.Set(x, y, pixelColor)
-				pixelColor = options.content[y][options.width-x-1]
-				img.Set(options.width-x-1, y, pixelColor)
-				//
-			} else {
-				colorIndex := rand.Intn(len(options.colors))
-				pixelColor = options.colors[colorIndex]
-				// fill the left side firstly
-				img.Set(x, y, pixelColor)
-				// fill the right side to make the image symmetric
-				img.Set(options.width-x-1, y, pixelColor)
-			}
+			colorIndex := rand.Intn(len(options.colors))
+			pixelColor = options.colors[colorIndex]
+			// fill the left side first
+			img.Set(x, y, pixelColor)
+			// fill the right side to make the image symmetric
+			img.Set(options.width-x-1, y, pixelColor)
 		}
 	}
 }
 
-func read_lines() (error, []string) {
+// Draws an image from imgOptions content
+func drawContent(img *image.RGBA, options imgOptions) {
+	for x := 0; x < (options.width); x++ {
+		for y := 0; y < options.height; y++ {
+			img.Set(x, y, options.content[y][x])
+		}
+	}
+}
+
+func read_lines() ([]string, error) {
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("Enter flag representation: ")
 	var lines []string
 	for {
 		// reads user input until \n by default
@@ -154,17 +164,16 @@ func read_lines() (error, []string) {
 			break
 		}
 	}
-	return scanner.Err(), lines
+	return lines, scanner.Err()
 }
 
-func getArray(lines []string) (array [][]int) {
-	// convert lines to 2D array with int
-
+// Convert lines to 2D array with Integers representing input characters
+func getArrayFromLines(lines []string) (array [][]int) {
 	var colorRepresenter int = -1
 	var colorMap = make(map[string]int)
 
-	for x := 0; x < len(lines); x++ {
-		elements := strings.Split(lines[x], "")
+	for _, line := range lines {
+		elements := strings.Split(line, "")
 		var mask []int
 		for _, element := range elements {
 			_, exists := colorMap[element]

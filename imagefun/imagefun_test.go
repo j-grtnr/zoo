@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -15,14 +17,13 @@ var (
 	colorReprArray = [][]int{{0, 0, 0, 0}, {1, 1, 1}, {2, 2}}
 )
 
-func TestGetArray(t *testing.T) {
-	arr := getArray(inputLines)
+func TestGetArrayFromLines(t *testing.T) {
+	arr := getArrayFromLines(inputLines)
 
 	for ii := range colorReprArray {
 		for jj := range colorReprArray[ii] {
 			if arr[ii][jj] != colorReprArray[ii][jj] {
-				t.Fail()
-				t.Logf("mismatch found:\n %v \n %v", arr, colorReprArray)
+				t.Errorf("mismatch found:\n %v \n %v", arr, colorReprArray)
 				break
 			}
 		}
@@ -43,8 +44,7 @@ func TestPutColors(t *testing.T) {
 				}
 			}
 			if !contained {
-				t.Fail()
-				t.Logf("wrong type of value in array  at (%d, %d)", ii, jj)
+				t.Errorf("wrong type of value in array  at (%d, %d)", ii, jj)
 			}
 		}
 	}
@@ -55,27 +55,18 @@ func TestModifyUniform(t *testing.T) {
 	arrUniform := modifyUniform(options, arr)
 	width := len(arrUniform[0])
 	for _, line := range arrUniform {
-		if len(line) != width {
-			t.Fail()
-			t.Logf("wrong length of line in array: is %d, should be %d", len(line), width)
-		}
+		assert.Equal(t, len(line), width, "lengths of pixel rows should be equal")
 	}
 }
 
+// Assert image size to input width and height
 func TestScaleContent(t *testing.T) {
 	arr := putColors(options, colorReprArray)
 	arrUniform := modifyUniform(options, arr)
 	arrScaled := scaleContent(options, arrUniform)
 
-	if len(arrScaled) != options.height {
-		t.Fail()
-		t.Logf("wrong height of array")
+	assert.Equal(t, len(arrScaled), options.height, "number of pixel rows does not fit image height")
+	for _, row := range arrScaled {
+		assert.Equal(t, len(row), options.width, "length of pixel row does not fit image width")
 	}
-	for ii, row := range arrScaled {
-		if len(row) != options.width {
-			t.Fail()
-			t.Logf("wrong width of array in row %d", ii)
-		}
-	}
-
 }
