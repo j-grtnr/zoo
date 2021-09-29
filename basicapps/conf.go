@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 )
 
@@ -30,6 +31,14 @@ func mustGetConfig() config {
 
 func loadConfig() config {
 	// TODO: add test
+	// var reader = bufio.NewReader(os.Stdin)
+	// message, _ := reader.ReadString('\n')
+
+	if len(os.Args[:]) > 1 {
+		os.Setenv("KEY_STRING", os.Args[1])
+		// TODO: logging
+		fmt.Println("Warning: \"KEY_STRING\" environment variable got overwritten by command line argument")
+	}
 	return config{
 		filePath:   os.Getenv("FILE_PATH"),
 		keyString:  os.Getenv("KEY_STRING"),
